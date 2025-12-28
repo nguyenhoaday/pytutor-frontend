@@ -1,7 +1,20 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-// Derive WebSocket URL from API_BASE_URL (http:// -> ws://, https:// -> wss://)
-export const WS_BASE_URL = API_BASE_URL.replace(/^http/, 'ws');
+/**
+ * Tạo WebSocket URL từ API_BASE_URL
+ * - Tự động chuyển http -> ws và https -> wss
+ * - Giữ nguyên host và port
+ */
+export const getWebSocketUrl = (path: string = '/ws/terminal'): string => {
+  try {
+    const url = new URL(API_BASE_URL);
+    const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${url.host}${path}`;
+  } catch {
+    // Fallback nếu không parse được URL
+    return `ws://localhost:8000${path}`;
+  }
+};
 
 export interface ProblemQueryOptions {
   search?: string;

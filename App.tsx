@@ -14,7 +14,7 @@ import MarkdownRenderer from './components/MarkdownRenderer';
 import { UserMastery, LearningNode, TabView } from './types';
 import ProblemList, { ProblemSummary } from './components/ProblemList';
 import Auth from './components/Auth';
-import { endLearningSession, getLearningPath, getLearningReport, getMastery, getProblem, startLearningSession, submitHintFeedback, submitProblem } from './services/api';
+import { endLearningSession, getLearningPath, getLearningReport, getMastery, getProblem, startLearningSession, submitHintFeedback, submitProblem, getWebSocketUrl } from './services/api';
 import AdminDashboard from './components/AdminDashboard';
 import ProblemManager from './components/ProblemManager';
 import UserManager from './components/UserManager';
@@ -1066,6 +1066,7 @@ const App: React.FC = () => {
                                 isRunning={isRunning}
                                 code={code}
                                 runTrigger={runTrigger}
+                                wsUrl={getWebSocketUrl('/ws/terminal')}
                                 onExecutionStart={handleExecutionStart}
                                 onExecutionEnd={handleExecutionEnd}
                               />
@@ -1192,6 +1193,7 @@ const App: React.FC = () => {
                                 isRunning={isRunning}
                                 code={code}
                                 runTrigger={runTrigger}
+                                wsUrl={getWebSocketUrl('/ws/terminal')}
                                 onExecutionStart={handleExecutionStart}
                                 onExecutionEnd={handleExecutionEnd}
                               />

@@ -3,7 +3,7 @@ import { ExecutionResult } from '../types';
 import { Terminal as TerminalIcon, Square } from 'lucide-react';
 import { Terminal as XTerm } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
-import { WS_BASE_URL } from '../services/api';
+import { getWebSocketUrl } from '../services/api';
 import 'xterm/css/xterm.css';
 
 interface TerminalProps {
@@ -22,7 +22,7 @@ const Terminal: React.FC<TerminalProps> = ({
   isRunning,
   code,
   runTrigger = 0,
-  wsUrl = `${WS_BASE_URL}/ws/terminal`,
+  wsUrl = getWebSocketUrl('/ws/terminal'),
   onExecutionStart,
   onExecutionEnd,
 }) => {
