@@ -1,5 +1,8 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Derive WebSocket URL from API_BASE_URL (http:// -> ws://, https:// -> wss://)
+export const WS_BASE_URL = API_BASE_URL.replace(/^http/, 'ws');
+
 export interface ProblemQueryOptions {
   search?: string;
   difficulty?: string;

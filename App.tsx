@@ -1035,7 +1035,7 @@ const App: React.FC = () => {
                               }`}
                             title="Split view (Terminal + Tests)"
                           >
-                          Split
+                            Split
                           </button>
                         </div>
                         <div className="flex items-center gap-2">
@@ -1052,7 +1052,7 @@ const App: React.FC = () => {
                               }`}
                             title="Close bottom panel"
                           >
-                          Close
+                            Close
                           </button>
                         </div>
                       </div>
@@ -1066,7 +1066,6 @@ const App: React.FC = () => {
                                 isRunning={isRunning}
                                 code={code}
                                 runTrigger={runTrigger}
-                                wsUrl="ws://localhost:8000/ws/terminal"
                                 onExecutionStart={handleExecutionStart}
                                 onExecutionEnd={handleExecutionEnd}
                               />
@@ -1080,7 +1079,7 @@ const App: React.FC = () => {
                                 )}
                                 {testError && (
                                   <div className={`mb-3 p-2 rounded ${theme === 'dark' ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800'}`}>
-                                  <div className="text-sm font-medium">Error running tests</div>
+                                    <div className="text-sm font-medium">Error running tests</div>
                                     <div className="text-xs">{testError}</div>
                                   </div>
                                 )}
@@ -1163,7 +1162,7 @@ const App: React.FC = () => {
                                 )}
                                 {testResults.length === 0 && !testError && !isTesting && (
                                   <div className={`p-3 rounded ${theme === 'dark' ? 'bg-zinc-900/40 text-zinc-400' : 'bg-gray-50 text-gray-600'}`}>
-                                  Chưa có kết quả test. Nhấn “Run Tests” để bắt đầu.
+                                    Chưa có kết quả test. Nhấn “Run Tests” để bắt đầu.
                                   </div>
                                 )}
                                 {testResults.map((result, index) => (
@@ -1193,7 +1192,6 @@ const App: React.FC = () => {
                                 isRunning={isRunning}
                                 code={code}
                                 runTrigger={runTrigger}
-                                wsUrl="ws://localhost:8000/ws/terminal"
                                 onExecutionStart={handleExecutionStart}
                                 onExecutionEnd={handleExecutionEnd}
                               />
@@ -1210,7 +1208,7 @@ const App: React.FC = () => {
                                 )}
                                 {testError && (
                                   <div className={`mb-3 p-2 rounded ${theme === 'dark' ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800'}`}>
-                                  <div className="text-sm font-medium">Error running tests</div>
+                                    <div className="text-sm font-medium">Error running tests</div>
                                     <div className="text-xs">{testError}</div>
                                   </div>
                                 )}
@@ -1293,7 +1291,7 @@ const App: React.FC = () => {
                                 )}
                                 {testResults.length === 0 && !testError && !isTesting && (
                                   <div className={`p-3 rounded ${theme === 'dark' ? 'bg-zinc-900/40 text-zinc-400' : 'bg-gray-50 text-gray-600'}`}>
-                                  Chưa có kết quả test. Nhấn “Run Tests” để bắt đầu.
+                                    Chưa có kết quả test. Nhấn “Run Tests” để bắt đầu.
                                   </div>
                                 )}
                                 {testResults.map((result, index) => (

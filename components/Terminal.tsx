@@ -1,8 +1,9 @@
-import React, { useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { ExecutionResult } from '../types';
 import { Terminal as TerminalIcon, Square } from 'lucide-react';
 import { Terminal as XTerm } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
+import { WS_BASE_URL } from '../services/api';
 import 'xterm/css/xterm.css';
 
 interface TerminalProps {
@@ -21,7 +22,7 @@ const Terminal: React.FC<TerminalProps> = ({
   isRunning,
   code,
   runTrigger = 0,
-  wsUrl,
+  wsUrl = `${WS_BASE_URL}/ws/terminal`,
   onExecutionStart,
   onExecutionEnd,
 }) => {
@@ -31,15 +32,6 @@ const Terminal: React.FC<TerminalProps> = ({
   const wsRef = useRef<WebSocket | null>(null);
   const lastRunTrigger = useRef<number>(0);
   const dataHandlerRef = useRef<{ dispose: () => void } | null>(null);
-
-  const effectiveWsUrl = useMemo(() => {
-    if (wsUrl) return wsUrl;
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const wsProtocol = apiUrl.startsWith('https') ? 'wss' : 'ws';
-    const cleanUrl = apiUrl.replace(/^https?:\/\//, '');
-    const baseUrl = cleanUrl.endsWith('/') ? cleanUrl.slice(0, -1) : cleanUrl;
-    return `${wsProtocol}://${baseUrl}/ws/terminal`;
-  }, [wsUrl]);
 
   useEffect(() => {
     const term = new XTerm({
@@ -122,7 +114,7 @@ const Terminal: React.FC<TerminalProps> = ({
 
     onExecutionStart?.();
 
-    const ws = new WebSocket(effectiveWsUrl);
+    const ws = new WebSocket(wsUrl);
     ws.binaryType = 'arraybuffer';
     wsRef.current = ws;
 
@@ -157,7 +149,7 @@ const Terminal: React.FC<TerminalProps> = ({
     dataHandlerRef.current = dataHandler;
 
     return () => { };
-  }, [runTrigger, code, effectiveWsUrl, cleanupWebSocket, onExecutionStart, onExecutionEnd]);
+  }, [runTrigger, code, wsUrl, cleanupWebSocket, onExecutionStart, onExecutionEnd]);
 
   useEffect(() => {
     return () => {
