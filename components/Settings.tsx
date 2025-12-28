@@ -1,21 +1,31 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { User, LogOut, Key, Moon, Sun, Monitor, Copy, Check, Plug, AlertTriangle } from 'lucide-react';
-import { API_BASE_URL, getWebSocketUrl } from '../services/api';
+import { API_BASE_URL } from '../services/api';
 
 interface SettingsProps {
   isLoggedIn: boolean;
   onLogout: () => void;
   theme: 'dark' | 'light';
   onThemeChange: (theme: 'dark' | 'light') => void;
+  isAdmin: boolean;
 }
 
-const Settings: React.FC<SettingsProps> = ({ isLoggedIn, onLogout, theme, onThemeChange }) => {
+const Settings: React.FC<SettingsProps> = ({ isLoggedIn, onLogout, theme, onThemeChange, isAdmin }) => {
   const username = isLoggedIn ? localStorage.getItem('username') || 'User' : 'Guest';
   const [copiedKey, setCopiedKey] = useState<'api' | 'ws' | null>(null);
   const [backendStatus, setBackendStatus] = useState<'checking' | 'ok' | 'error'>('checking');
   const [backendConfig, setBackendConfig] = useState<{ enable_ws_terminal?: boolean } | null>(null);
 
-  const wsUrl = useMemo(() => getWebSocketUrl('/ws/terminal'), []);
+  const wsUrl = useMemo(() => {
+    // Best-effort derivation for display only (actual WS url is set elsewhere).
+    try {
+      const u = new URL(API_BASE_URL);
+      const protocol = u.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${protocol}//${u.host}/ws/terminal`;
+    } catch {
+      return 'ws://localhost:8000/ws/terminal';
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -91,9 +101,6 @@ const Settings: React.FC<SettingsProps> = ({ isLoggedIn, onLogout, theme, onThem
                 {backendConfig?.enable_ws_terminal ? 'Đã bật' : 'Đã tắt'}
               </span>
             </div>
-            <p className={`mt-1 text-xs ${theme === 'dark' ? 'text-zinc-500' : 'text-gray-500'}`}>
-              Nếu backend tắt WS terminal (env <code>ENABLE_WS_TERMINAL=false</code>) thì màn Terminal sẽ không hoạt động.
-            </p>
           </div>
         </div>
 
@@ -157,6 +164,7 @@ const Settings: React.FC<SettingsProps> = ({ isLoggedIn, onLogout, theme, onThem
           </div>
         </div>
 
+        {isAdmin && (
         <div className={`border rounded-2xl p-4 ${theme === 'dark' ? 'bg-[#1e1e1e] border-zinc-800' : 'bg-white border-gray-200'}`}>
           <div className="flex items-center gap-3 mb-3">
             <Key size={20} className={theme === 'dark' ? 'text-zinc-400' : 'text-gray-500'} />
@@ -214,6 +222,7 @@ const Settings: React.FC<SettingsProps> = ({ isLoggedIn, onLogout, theme, onThem
             </div>
           </div>
         </div>
+        )}
 
         <div className={`border rounded-2xl p-4 ${theme === 'dark' ? 'bg-[#1e1e1e] border-zinc-800' : 'bg-white border-gray-200'}`}>
           <h3 className={`font-semibold mb-2 ${theme === 'dark' ? 'text-zinc-200' : 'text-gray-800'}`}>Giới thiệu</h3>
