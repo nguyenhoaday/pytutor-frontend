@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { User, LogOut, Key, Moon, Sun, Monitor, Copy, Check, Plug, AlertTriangle } from 'lucide-react';
-import { API_BASE_URL } from '../services/api';
+import { API_BASE_URL, getWebSocketUrl } from '../services/api';
 
 interface SettingsProps {
   isLoggedIn: boolean;
@@ -16,16 +16,7 @@ const Settings: React.FC<SettingsProps> = ({ isLoggedIn, onLogout, theme, onThem
   const [backendStatus, setBackendStatus] = useState<'checking' | 'ok' | 'error'>('checking');
   const [backendConfig, setBackendConfig] = useState<{ enable_ws_terminal?: boolean } | null>(null);
 
-  const wsUrl = useMemo(() => {
-    // Best-effort derivation for display only (actual WS url is set elsewhere).
-    try {
-      const u = new URL(API_BASE_URL);
-      const protocol = u.protocol === 'https:' ? 'wss:' : 'ws:';
-      return `${protocol}//${u.host}/ws/terminal`;
-    } catch {
-      return 'ws://localhost:8000/ws/terminal';
-    }
-  }, []);
+  const wsUrl = useMemo(() => getWebSocketUrl('/ws/terminal'), []);
 
   useEffect(() => {
     let cancelled = false;
