@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Play, Pause, Settings, Database, Clock, CheckCircle, AlertCircle, Loader2, RefreshCw } from 'lucide-react';
+import { Calendar, Play, Pause, Settings, Database, Clock, CheckCircle, AlertCircle, Loader2, RefreshCw, Trash2, X } from 'lucide-react';
 import { API_BASE_URL } from '../services/api';
 
 interface SchedulerConfig {
@@ -236,6 +236,33 @@ const QdrantScheduler: React.FC<QdrantSchedulerProps> = ({ theme, token, onBack 
     return new Date(dateStr).toLocaleString();
   };
 
+  const cancelSchedule = async (scheduleId: string) => {
+    if (!confirm('Bạn có chắc chắn muốn hủy lịch này?')) return;
+
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_BASE_URL}/api/admin/scheduler/schedules/${scheduleId}`, {
+        method: 'DELETE',
+        headers
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Không thể hủy lịch');
+      }
+
+      setSuccess('Đã hủy lịch thành công!');
+      loadData();
+    } catch (err: any) {
+      setError(err.message || 'Không thể hủy lịch');
+    }
+  };
+
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#09090b] text-zinc-100' : 'bg-gray-50 text-gray-900'}`}>
       {/* Header with Glassmorphism */}
@@ -468,6 +495,7 @@ const QdrantScheduler: React.FC<QdrantSchedulerProps> = ({ theme, token, onBack 
                   <th className="text-left py-4 px-6 font-semibold">Thời gian</th>
                   <th className="text-left py-4 px-6 font-semibold">Processed</th>
                   <th className="text-left py-4 px-6 font-semibold">Points</th>
+                  <th className="text-center py-4 px-6 font-semibold">Thao tác</th>
                 </tr>
               </thead>
               <tbody className={`divide-y ${theme === 'dark' ? 'divide-white/5' : 'divide-gray-100'}`}>
@@ -516,6 +544,19 @@ const QdrantScheduler: React.FC<QdrantSchedulerProps> = ({ theme, token, onBack 
                         <span className={`font-mono font-bold ${schedule.points_created > 0 ? 'text-emerald-500' : 'text-gray-400'}`}>
                           +{schedule.points_created}
                         </span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        {schedule.status === 'pending' ? (
+                          <button
+                            onClick={() => cancelSchedule(schedule.id)}
+                            className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/20 transition-colors"
+                            title="Hủy lịch"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        ) : (
+                          <span className="text-gray-500">-</span>
+                        )}
                       </td>
                     </tr>
                   ))
