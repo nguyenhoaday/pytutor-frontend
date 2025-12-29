@@ -50,7 +50,7 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ theme, token, onBack })
   // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [difficulty, setDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
   const [testCases, setTestCases] = useState<TestCase[]>([{ input: '', expected_output: '' }]);
 
   const [problemTypes, setProblemTypes] = useState<Array<{ id: number, name: string }>>([]);
@@ -212,7 +212,7 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ theme, token, onBack })
   const resetForm = () => {
     setTitle('');
     setDescription('');
-    setDifficulty('beginner');
+    setDifficulty('easy');
     setTestCases([{ input: '', expected_output: '' }]);
   };
 
@@ -251,10 +251,10 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ theme, token, onBack })
   };
 
   const getDifficultyColor = (diff: string) => {
-    switch (diff) {
-      case 'beginner': return 'bg-green-600';
-      case 'intermediate': return 'bg-yellow-600';
-      case 'advanced': return 'bg-red-600';
+    switch (diff?.toLowerCase()) {
+      case 'easy': return 'bg-green-600';
+      case 'medium': return 'bg-yellow-600';
+      case 'hard': return 'bg-red-600';
       default: return 'bg-gray-600';
     }
   };
@@ -272,7 +272,7 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ theme, token, onBack })
 
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#09090b] text-zinc-100' : 'bg-gray-50 text-gray-900'}`}>
-      {/* Header with Glassmorphism */}
+      {/* Header */}
       <div className={`sticky top-0 z-20 backdrop-blur-xl border-b transition-colors duration-300 ${theme === 'dark' ? 'border-white/10 bg-[#09090b]/80' : 'border-gray-200/50 bg-white/70'}`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -410,9 +410,9 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ theme, token, onBack })
                             onChange={(e) => setEditingProblem({ ...editingProblem, difficulty: e.target.value })}
                             className={`w-full px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all ${theme === 'dark' ? 'bg-gray-900/50 border-white/10 focus:border-emerald-500/50' : 'bg-gray-50 border-gray-200'}`}
                           >
-                            <option value="beginner">Beginner</option>
-                            <option value="intermediate">Intermediate</option>
-                            <option value="advanced">Advanced</option>
+                            <option value="easy">Easy (Dễ)</option>
+                            <option value="medium">Medium (Vừa)</option>
+                            <option value="hard">Hard (Khó)</option>
                           </select>
                           <select
                             value={String(editingProblem.problem_type_id || '')}
@@ -475,11 +475,11 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ theme, token, onBack })
                         </div>
 
                         <div className="flex items-center gap-3 mb-4">
-                          <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full border ${problem.difficulty === 'beginner' ? 'bg-teal-500/10 text-teal-500 border-teal-500/20' :
-                            problem.difficulty === 'intermediate' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                          <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full border ${problem.difficulty?.toLowerCase() === 'easy' ? 'bg-teal-500/10 text-teal-500 border-teal-500/20' :
+                            problem.difficulty?.toLowerCase() === 'medium' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
                               'bg-rose-500/10 text-rose-500 border-rose-500/20'
                             }`}>
-                            {problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1)}
+                            {problem.difficulty ? problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1) : 'Unknown'}
                           </span>
                           <span className={`text-xs flex items-center gap-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                             • {problem.test_case_count} test cases
@@ -644,9 +644,9 @@ const ProblemManager: React.FC<ProblemManagerProps> = ({ theme, token, onBack })
                       onChange={(e) => setDifficulty(e.target.value as any)}
                       className={`w-full px-4 py-2.5 rounded-xl border outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all ${theme === 'dark' ? 'bg-gray-800 border-white/10' : 'bg-gray-50 border-gray-200'}`}
                     >
-                      <option value="beginner">Beginner (Dễ)</option>
-                      <option value="intermediate">Intermediate (Vừa)</option>
-                      <option value="advanced">Advanced (Khó)</option>
+                      <option value="easy">Easy (Dễ)</option>
+                      <option value="medium">Medium (Vừa)</option>
+                      <option value="hard">Hard (Khó)</option>
                     </select>
                   </div>
 
