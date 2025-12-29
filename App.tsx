@@ -449,7 +449,8 @@ const App: React.FC = () => {
           hint_level: nextLevel,
           previous_hints: [testHint.hint],
           language: language,
-          use_llm: true
+          use_llm: true,
+          session_id: activeSessionId
         })
       });
 
@@ -472,7 +473,7 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Failed to get next hint:', error);
     }
-  }, [currentProblem, testHint, currentHintLevel, code, language]);
+  }, [currentProblem, testHint, currentHintLevel, code, language, activeSessionId]);
 
   const handleHintFeedback = useCallback(async (helpful: boolean) => {
     if (!testHint) return;
