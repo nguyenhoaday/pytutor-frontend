@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { getProblems } from '../services/api';
+import { getProblems, getProblemTypes, ProblemType } from '../services/api';
 import { Code, Target, BookOpen, TrendingUp, CheckCircle, Book, Sparkles } from 'lucide-react';
 
 export interface ProblemSummary {
@@ -41,6 +41,21 @@ const ProblemList: React.FC<Props> = ({
   const [offset, setOffset] = useState(0);
   const [expandedIds, setExpandedIds] = useState<Set<number>>(() => new Set());
   const [reloadSeq, setReloadSeq] = useState(0);
+  const [problemTypes, setProblemTypes] = useState<ProblemType[]>([]);
+
+  // Tải danh sách loại bài tập từ database khi component mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const types = await getProblemTypes();
+        if (!cancelled) setProblemTypes(types);
+      } catch (err) {
+        console.error('Failed to load problem types:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Tải danh sách bài tập khi bộ lọc, phân trang hoặc trigger thay đổi
   // Debounce input tìm kiếm để tránh gọi API quá nhiều
@@ -166,9 +181,9 @@ const ProblemList: React.FC<Props> = ({
         </select>
         <select value={typeFilter || ''} onChange={e => { setTypeFilter(e.target.value || undefined); setOffset(0); }} className={`text-sm px-2 py-1 rounded ${theme === 'dark' ? 'bg-zinc-900 border-zinc-700 text-zinc-200' : 'bg-white border-gray-200 text-gray-800'}`}>
           <option value="">Tất cả loại</option>
-          <option value="algorithm">Algorithm</option>
-          <option value="data structure">Data Structure</option>
-          <option value="math">Math</option>
+          {problemTypes.map(pt => (
+            <option key={pt.id} value={pt.name}>{pt.name}</option>
+          ))}
         </select>
         <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value as any); setOffset(0); }} className={`text-sm px-2 py-1 rounded ${theme === 'dark' ? 'bg-zinc-900 border-zinc-700 text-zinc-200' : 'bg-white border-gray-200 text-gray-800'}`}>
           <option value="all">Tất cả</option>
@@ -228,12 +243,12 @@ const ProblemList: React.FC<Props> = ({
               }}
               aria-selected={isSelected}
               className={`p-4 rounded-lg border transition-all cursor-pointer hover:shadow-lg hover:scale-[1.02] ${isSelected
-                  ? theme === 'dark'
-                    ? 'bg-indigo-900/40 border-indigo-500 ring-2 ring-indigo-500/30 shadow-lg shadow-indigo-500/20'
-                    : 'bg-indigo-50 border-indigo-500 ring-2 ring-indigo-500/30 shadow-lg shadow-indigo-500/20'
-                  : theme === 'dark'
-                    ? 'bg-zinc-900/70 border-zinc-700 hover:bg-zinc-800/70 hover:border-zinc-600'
-                    : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                ? theme === 'dark'
+                  ? 'bg-indigo-900/40 border-indigo-500 ring-2 ring-indigo-500/30 shadow-lg shadow-indigo-500/20'
+                  : 'bg-indigo-50 border-indigo-500 ring-2 ring-indigo-500/30 shadow-lg shadow-indigo-500/20'
+                : theme === 'dark'
+                  ? 'bg-zinc-900/70 border-zinc-700 hover:bg-zinc-800/70 hover:border-zinc-600'
+                  : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'
                 }`}
             >
               {/* Header with status and difficulty */}
@@ -243,8 +258,8 @@ const ProblemList: React.FC<Props> = ({
                     <CheckCircle size={18} className="text-green-500 flex-shrink-0" />
                   )}
                   <h4 className={`font-semibold text-sm leading-tight flex-1 pr-2 ${isSelected
-                      ? theme === 'dark' ? 'text-indigo-100' : 'text-indigo-900'
-                      : theme === 'dark' ? 'text-zinc-100' : 'text-gray-900'
+                    ? theme === 'dark' ? 'text-indigo-100' : 'text-indigo-900'
+                    : theme === 'dark' ? 'text-zinc-100' : 'text-gray-900'
                     }`}>
                     {p.title}
                   </h4>
@@ -286,8 +301,8 @@ const ProblemList: React.FC<Props> = ({
                 {shouldShowToggle && (
                   <button
                     className={`text-xs mt-1 px-2 py-0.5 rounded transition-colors ${theme === 'dark'
-                        ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                      ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                       }`}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -309,8 +324,8 @@ const ProblemList: React.FC<Props> = ({
                 disabled={!hasPrev}
                 onClick={() => setOffset(Math.max(0, offset - limit))}
                 className={`px-3 py-1.5 text-xs rounded-md transition-colors ${!hasPrev
-                    ? theme === 'dark' ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : theme === 'dark' ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? theme === 'dark' ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : theme === 'dark' ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
                 Trước
@@ -319,8 +334,8 @@ const ProblemList: React.FC<Props> = ({
                 disabled={!hasNext}
                 onClick={() => setOffset(offset + limit)}
                 className={`px-3 py-1.5 text-xs rounded-md transition-colors ${!hasNext
-                    ? theme === 'dark' ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : theme === 'dark' ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? theme === 'dark' ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : theme === 'dark' ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
                 Tiếp

@@ -42,7 +42,7 @@ const App: React.FC = () => {
   const [code, setCode] = useState<string>("# Write your Python code here\n\n");
   const [isRunning, setIsRunning] = useState(false);
   const [runTrigger, setRunTrigger] = useState(0);
-  const [showProblemListPanel, setShowProblemListPanel] = useState(false);
+
   const [currentProblem, setCurrentProblem] = useState<ProblemSummary | null>(null);
   const [problemsRefreshTrigger, setProblemsRefreshTrigger] = useState(0);
   const [testResults, setTestResults] = useState<any[]>([]);
@@ -55,6 +55,7 @@ const App: React.FC = () => {
   const [isSubmittingTestHintFeedback, setIsSubmittingTestHintFeedback] = useState(false);
   const [currentHintLevel, setCurrentHintLevel] = useState(1);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [showProblemListPanel, setShowProblemListPanel] = useState(true);
   const [isHintPanelOpen, setIsHintPanelOpen] = useState(false);
   const [showVisualization, setShowVisualization] = useState(false);
   const [visualizationType, setVisualizationType] = useState<'ast' | 'cfg' | 'dfg'>('cfg');
@@ -66,7 +67,17 @@ const App: React.FC = () => {
   const [bottomSplit, setBottomSplit] = useState<boolean>(() => {
     return localStorage.getItem('bottomSplit') === 'true';
   });
-  const [isProblemDetailsCollapsed, setIsProblemDetailsCollapsed] = useState(false);
+  const [leftTab, setLeftTab] = useState<'list' | 'desc'>('list');
+
+  // Tự động chuyển sang tab mô tả khi chọn bài toán
+  useEffect(() => {
+    if (currentProblem) {
+      setLeftTab('desc');
+    } else {
+      setLeftTab('list');
+    }
+  }, [currentProblem?.id]);
+
   const [showTerminal, setShowTerminal] = useState<boolean>(() => {
     const s = localStorage.getItem('showTerminal');
     return s === null ? true : s === 'true';
@@ -219,8 +230,12 @@ const App: React.FC = () => {
       setAdminView(null);
     }
 
-    // Hiển thị panel danh sách bài tập qua link
-    setShowProblemListPanel(isProblemsSectionPath(pathname));
+    // Điều khiển tab bên trái dựa trên URL
+    if (pathname === '/problems' || pathname === '/problems/') {
+      setLeftTab('list');
+    } else if (/^\/problems\/\d+$/.test(pathname) || /^\/problem\/\d+$/.test(pathname)) {
+      setLeftTab('desc');
+    }
 
     // Lưu đường dẫn trước đó để quay lại khi đóng
     if (!isProgressPath(pathname)) {
@@ -742,13 +757,10 @@ const App: React.FC = () => {
               )}
               <button
                 onClick={() => {
-                  const inProblemsSection = isProblemsSectionPath(pathname);
-                  if (!inProblemsSection) {
-                    navigate(currentProblem ? `/problems/${currentProblem.id}` : '/problems');
+                  setShowProblemListPanel(prev => !prev);
+                  if (!showProblemListPanel) {
                     setIsHintPanelOpen(false);
-                    return;
                   }
-                  navigate(currentProblem ? `/problem/${currentProblem.id}` : '/editor');
                 }}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-all ${showProblemListPanel
                   ? theme === 'dark' ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white'
@@ -840,504 +852,306 @@ const App: React.FC = () => {
 
         <main className="flex-1 overflow-hidden relative">
           {activeTab === TabView.EDITOR && (
-            <div
-              className={`flex flex-col h-full w-full transition-[padding] duration-200 ${showProblemListPanel ? 'pl-[420px]' : ''
-                } ${isHintPanelOpen ? 'pr-[384px]' : ''
-                }`}
-            >
-              {/* Khu vực soạn thảo chính */}
-              <div className="flex-1 flex flex-col overflow-hidden">
-                {(isProblemLoading || problemLoadError) && (
-                  <div className={`px-4 py-2 text-sm border-b ${theme === 'dark'
-                    ? 'border-zinc-800 bg-zinc-900/50 text-zinc-200'
-                    : 'border-gray-200 bg-white text-gray-800'
-                    }`}>
-                    {isProblemLoading && (
-                      <span className="text-zinc-400">Đang tải bài tập...</span>
-                    )}
-                    {problemLoadError && (
-                      <span className="text-red-400">Không tải được bài tập: {problemLoadError}</span>
-                    )}
-                  </div>
-                )}
-
-                {/* Panel mô tả bài tập */}
-                {currentProblem && (
-                  <div className={`border-b ${theme === 'dark' ? 'border-zinc-700 bg-zinc-900/30' : 'border-gray-300 bg-gray-50'}`}>
-                    <div
-                      className={`px-4 py-2 flex items-center justify-between cursor-pointer transition-colors ${theme === 'dark' ? 'hover:bg-zinc-800/50' : 'hover:bg-gray-100'}`}
-                      onClick={() => setIsProblemDetailsCollapsed(!isProblemDetailsCollapsed)}
+            <div className="flex h-full w-full overflow-hidden">
+              {/* LEFT SIDEBAR: Problem List & Description */}
+              {showProblemListPanel && (
+                <div className={`flex flex-col flex-shrink-0 w-80 md:w-96 border-r transition-colors z-10 ${theme === 'dark' ? 'bg-[#1e1e1e] border-zinc-800' : 'bg-white border-gray-200'}`}>
+                  {/* Sidebar Tabs */}
+                  <div className={`flex border-b ${theme === 'dark' ? 'border-zinc-800' : 'border-gray-200'}`}>
+                    <button
+                      onClick={() => setLeftTab('list')}
+                      className={`flex-1 py-3 text-xs md:text-sm font-medium border-b-2 transition-colors ${leftTab === 'list'
+                        ? theme === 'dark' ? 'border-emerald-500 text-emerald-400 bg-zinc-800/50' : 'border-emerald-500 text-emerald-700 bg-emerald-50'
+                        : theme === 'dark' ? 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
                     >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <FileText size={16} className={theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'} />
-                        <div className="flex-1 min-w-0">
-                          <span className={`font-semibold text-sm ${theme === 'dark' ? 'text-zinc-100' : 'text-gray-900'}`}>
-                            {currentProblem.title}
-                          </span>
-                          <div className="mt-1 flex items-center gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate('/problems');
-                              }}
-                              className={`text-xs px-2 py-0.5 rounded transition-colors ${theme === 'dark'
-                                ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                }`}
-                              title="Quay lại danh sách bài tập"
-                            >
-                              ← Danh sách bài tập
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/problem/${currentProblem.id}`);
-                              }}
-                              className={`text-xs px-2 py-0.5 rounded transition-colors ${theme === 'dark'
-                                ? 'bg-indigo-700 text-white hover:bg-indigo-600'
-                                : 'bg-indigo-600 text-white hover:bg-indigo-500'
-                                }`}
-                              title="Tạo link giải bài (đóng panel)"
-                            >
-                              Link giải bài
-                            </button>
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            {currentProblem.difficulty && (
-                              <span className={`text-xs px-2 py-0.5 rounded font-medium ${currentProblem.difficulty === 'Easy' ? 'bg-green-600 text-white' :
-                                currentProblem.difficulty === 'Medium' ? 'bg-yellow-600 text-white' :
-                                  'bg-red-600 text-white'
-                                }`}>
-                                {currentProblem.difficulty}
-                              </span>
-                            )}
-                            {currentProblem.problem_type && (
-                              <span className={`text-xs px-2 py-0.5 rounded font-medium ${theme === 'dark' ? 'bg-zinc-700 text-zinc-200' : 'bg-gray-200 text-gray-700'
-                                }`}>
-                                {currentProblem.problem_type}
-                              </span>
-                            )}
-                            {currentProblem?.completed && (
-                              <span className="text-xs px-2 py-0.5 rounded bg-green-600 text-white font-medium flex items-center gap-1">
-                                <CheckCircle size={12} />
-                                Hoàn thành
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <button className={`p-1 rounded transition-colors ${theme === 'dark' ? 'hover:bg-zinc-700' : 'hover:bg-gray-200'
-                        }`}>
-                        {isProblemDetailsCollapsed ?
-                          <ChevronDown size={14} className={theme === 'dark' ? 'text-zinc-400' : 'text-gray-500'} /> :
-                          <ChevronUp size={14} className={theme === 'dark' ? 'text-zinc-400' : 'text-gray-500'} />
-                        }
-                      </button>
-                    </div>
-                    {!isProblemDetailsCollapsed && (
-                      <div className="px-4 pb-4 pt-2">
-                        <div className={`rounded-lg p-4 border ${theme === 'dark' ? 'bg-zinc-800/30 border-zinc-700/50' : 'bg-white border-gray-200'
-                          }`}>
-                          <div className="flex items-start gap-3">
-                            <div className={`p-2 rounded-lg flex-shrink-0 ${theme === 'dark' ? 'bg-indigo-900/40' : 'bg-indigo-50'
-                              }`}>
-                              <FileText size={18} className={theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className={`font-semibold text-sm mb-3 flex items-center gap-2 ${theme === 'dark' ? 'text-zinc-200' : 'text-gray-800'
-                                }`}>
-                                <span>Yêu cầu bài tập</span>
-                              </h4>
-                              <div className={`text-sm leading-relaxed whitespace-pre-wrap ${theme === 'dark' ? 'text-zinc-300' : 'text-gray-700'
-                                }`}>
-                                <div className={`p-3 rounded-md mb-3 max-h-40 overflow-y-auto ${theme === 'dark' ? 'bg-zinc-900/50' : 'bg-gray-50'
-                                  }`}>
-                                  {currentProblem.description}
-                                </div>
-                              </div>
-
-                              {/* Thống kê */}
-                              <div className={`mt-4 pt-3 border-t flex items-center justify-between text-xs ${theme === 'dark' ? 'border-zinc-700/50 text-zinc-400' : 'border-gray-200 text-gray-500'
-                                }`}>
-                                <div className="flex items-center gap-4">
-                                  <span className="flex items-center gap-1">
-                                    <Code size={12} />
-                                    Python
-                                  </span>
-                                  {currentProblem.difficulty && (
-                                    <span className={`px-2 py-0.5 rounded font-medium ${currentProblem.difficulty === 'Easy' ? 'bg-green-600 text-white' :
-                                      currentProblem.difficulty === 'Medium' ? 'bg-yellow-600 text-white' :
-                                        'bg-red-600 text-white'
-                                      }`}>
-                                      {currentProblem.difficulty}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2 text-xs">
-                                  <Lightbulb size={12} className={theme === 'dark' ? 'text-yellow-400' : 'text-yellow-600'} />
-                                  <span>Gợi ý: Sử dụng AI Tutor để được hỗ trợ</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                      Danh sách
+                    </button>
+                    <button
+                      onClick={() => setLeftTab('desc')}
+                      className={`flex-1 py-3 text-xs md:text-sm font-medium border-b-2 transition-colors ${leftTab === 'desc'
+                        ? theme === 'dark' ? 'border-indigo-500 text-indigo-400 bg-zinc-800/50' : 'border-indigo-500 text-indigo-700 bg-indigo-50'
+                        : theme === 'dark' ? 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                    >
+                      Mô tả
+                    </button>
                   </div>
-                )}
 
-                <div className={`flex-1 p-4 ${showTerminal ? 'pb-2' : 'pb-4'} min-h-0`}>
-                  <SimpleEditor code={code} onChange={setCode} theme={theme} />
-                </div>
-
-                {showTerminal && (
-                  <div className={`${terminalExpanded ? 'h-[55%]' : 'h-[35%]'} p-4 pt-2 flex flex-col gap-3 flex-shrink-0`}>
-                    <div className={`rounded-lg border overflow-hidden flex flex-col ${theme === 'dark' ? 'bg-[#1e1e1e] border-zinc-700' : 'bg-white border-gray-300'}`}>
-                      <div className={`px-3 py-2 text-xs font-semibold border-b flex items-center justify-between ${theme === 'dark' ? 'bg-zinc-900 text-zinc-300 border-zinc-700' : 'bg-gray-100 text-gray-700 border-gray-300'}`}>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setBottomTab('terminal')}
-                            className={`px-2 py-1 rounded text-xs transition-colors ${bottomTab === 'terminal'
-                              ? theme === 'dark' ? 'bg-zinc-700 text-white' : 'bg-gray-300 text-gray-900'
-                              : theme === 'dark' ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-white text-gray-700 hover:bg-gray-200'
-                              }`}
-                            title="Terminal output"
-                          >
-                            Terminal
-                          </button>
-                          <button
-                            onClick={() => setBottomTab('tests')}
-                            disabled={!(testResults.length > 0 || testError || isTesting)}
-                            className={`px-2 py-1 rounded text-xs transition-colors ${(testResults.length > 0 || testError || isTesting)
-                              ? bottomTab === 'tests'
-                                ? theme === 'dark' ? 'bg-zinc-700 text-white' : 'bg-gray-300 text-gray-900'
-                                : theme === 'dark' ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-white text-gray-700 hover:bg-gray-200'
-                              : theme === 'dark' ? 'bg-zinc-900 text-zinc-600 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                              }`}
-                            title="Test results"
-                          >
-                            Tests
-                            {(testResults.length > 0 || testError) && (
-                              <span className={`ml-2 px-1.5 py-0.5 rounded ${testError ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'
-                                }`}>
-                                {testError ? '!' : `${testResults.filter((t: any) => t.passed === true).length}/${testResults.length}`}
-                              </span>
-                            )}
-                          </button>
-                          <button
-                            onClick={() => setBottomSplit(prev => !prev)}
-                            disabled={!(testResults.length > 0 || testError)}
-                            className={`px-2 py-1 rounded text-xs transition-colors ${(testResults.length > 0 || testError)
-                              ? bottomSplit
-                                ? theme === 'dark' ? 'bg-indigo-700 text-white' : 'bg-indigo-600 text-white'
-                                : theme === 'dark' ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-white text-gray-700 hover:bg-gray-200'
-                              : theme === 'dark' ? 'bg-zinc-900 text-zinc-600 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                              }`}
-                            title="Split view (Terminal + Tests)"
-                          >
-                          Split
-                          </button>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setTerminalExpanded(prev => !prev)}
-                            className={`p-1 rounded ${theme === 'dark' ? 'hover:bg-zinc-700 text-zinc-300' : 'hover:bg-gray-200 text-gray-700'}`}
-                            title={terminalExpanded ? 'Restore panel size' : 'Expand panel'}
-                          >
-                            {terminalExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-                          </button>
-                          <button
-                            onClick={() => setShowTerminal(false)}
-                            className={`px-2 py-1 rounded text-xs ${theme === 'dark' ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200' : 'bg-white hover:bg-gray-200 text-gray-700'
-                              }`}
-                            title="Close bottom panel"
-                          >
-                          Close
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="flex-1 min-h-0 overflow-hidden">
-                        {(bottomSplit && (testResults.length > 0 || testError)) ? (
-                          <div className="h-full w-full grid grid-cols-1 md:grid-cols-2 gap-3 p-3">
-                            <div className={`min-h-0 rounded-lg border overflow-hidden ${theme === 'dark' ? 'border-zinc-700' : 'border-gray-300'}`}>
-                              <Terminal
-                                result={null}
-                                isRunning={isRunning}
-                                code={code}
-                                runTrigger={runTrigger}
-                                wsUrl={getWebSocketUrl('/ws/terminal')}
-                                onExecutionStart={handleExecutionStart}
-                                onExecutionEnd={handleExecutionEnd}
-                              />
-                            </div>
-                            <div className={`min-h-0 rounded-lg border overflow-hidden flex flex-col ${theme === 'dark' ? 'border-zinc-700 bg-[#1e1e1e]' : 'border-gray-300 bg-white'}`}>
-                              <div className="flex-1 overflow-auto p-3">
-                                {isTesting && (
-                                  <div className={`mb-3 p-2 rounded ${theme === 'dark' ? 'bg-zinc-800 text-zinc-200' : 'bg-gray-50 text-gray-800'}`}>
-                                    <div className="text-sm font-medium">Đang chạy test...</div>
-                                  </div>
+                  {/* Sidebar Content */}
+                  <div className="flex-1 overflow-hidden relative">
+                    {leftTab === 'list' ? (
+                      <ProblemList
+                        theme={theme}
+                        selectedProblemId={currentProblem?.id}
+                        refreshTrigger={problemsRefreshTrigger}
+                        showHeader={false}
+                        embedded={true}
+                        onSelect={(p: ProblemSummary) => {
+                          resetForNewProblem(p);
+                          navigate(`/problems/${p.id}`);
+                          // Tab switch handled by useEffect
+                        }}
+                      />
+                    ) : (
+                      <div className="h-full overflow-y-auto custom-scrollbar">
+                        {(isProblemLoading || problemLoadError) ? (
+                          <div className={`p-4 text-sm ${theme === 'dark' ? 'text-zinc-400' : 'text-gray-600'}`}>
+                            {isProblemLoading && "Đang tải bài tập..."}
+                            {problemLoadError && <span className="text-red-500">Lỗi: {problemLoadError}</span>}
+                          </div>
+                        ) : currentProblem ? (
+                          <div className="p-4 space-y-4">
+                            <div>
+                              <h3 className={`font-bold text-lg leading-tight mb-2 ${theme === 'dark' ? 'text-zinc-100' : 'text-gray-900'}`}>
+                                {currentProblem.title}
+                              </h3>
+                              <div className="flex flex-wrap gap-2">
+                                {currentProblem.difficulty && (
+                                  <span className={`text-xs px-2 py-0.5 rounded font-medium ${currentProblem.difficulty === 'Easy' ? 'bg-green-600/20 text-green-400 border border-green-600/30' :
+                                    currentProblem.difficulty === 'Medium' ? 'bg-yellow-600/20 text-yellow-400 border border-yellow-600/30' :
+                                      'bg-red-600/20 text-red-400 border border-red-600/30'
+                                    }`}>
+                                    {currentProblem.difficulty}
+                                  </span>
                                 )}
-                                {testError && (
-                                  <div className={`mb-3 p-2 rounded ${theme === 'dark' ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800'}`}>
-                                  <div className="text-sm font-medium">Error running tests</div>
-                                    <div className="text-xs">{testError}</div>
-                                  </div>
+                                {currentProblem.problem_type && (
+                                  <span className={`text-xs px-2 py-0.5 rounded border ${theme === 'dark' ? 'bg-zinc-800 border-zinc-700 text-zinc-300' : 'bg-gray-100 border-gray-200 text-gray-700'}`}>
+                                    {currentProblem.problem_type}
+                                  </span>
                                 )}
-                                {testHint && (
-                                  <div className={`mb-3 p-3 rounded border-l-4 ${theme === 'dark' ? 'bg-yellow-900/20 border-yellow-600 text-yellow-200' : 'bg-yellow-50 border-yellow-400 text-yellow-800'}`}>
-                                    <div className="text-sm font-medium mb-1 flex items-center gap-2">
-                                      <Lightbulb size={16} />
-                                      Gợi ý AI tự động (Level {currentHintLevel})
-                                    </div>
-                                    <div className="text-sm mb-2">
-                                      <MarkdownRenderer content={testHint.hint} theme={theme} />
-                                    </div>
-                                    {testHint.error_type && testHint.error_type !== 'none' && (
-                                      <div className="text-xs opacity-75">
-                                        Lỗi: {testHint.error_message}
-                                      </div>
-                                    )}
-                                    {testHint.concepts_to_review && testHint.concepts_to_review.length > 0 && (
-                                      <div className="text-xs opacity-75 mt-1">
-                                        Khái niệm cần ôn: {testHint.concepts_to_review.join(', ')}
-                                      </div>
-                                    )}
-                                    <div className="flex items-center gap-2 mt-3">
-                                      {currentHintLevel < 5 && (
-                                        <button
-                                          onClick={handleNextHint}
-                                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${theme === 'dark'
-                                            ? 'bg-yellow-700 hover:bg-yellow-600 text-yellow-100'
-                                            : 'bg-yellow-600 hover:bg-yellow-500 text-white'
-                                            }`}
-                                          title="Yêu cầu gợi ý chi tiết hơn"
-                                        >
-                                          <NextIcon size={12} />
-                                          Gợi ý tiếp theo
-                                        </button>
-                                      )}
-                                      <button
-                                        onClick={() => handleHintFeedback(true)}
-                                        disabled={!testHint?.interaction_id || isSubmittingTestHintFeedback || testHintFeedback !== null}
-                                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${theme === 'dark'
-                                          ? 'bg-green-700 hover:bg-green-600 text-green-100'
-                                          : 'bg-green-600 hover:bg-green-500 text-white'
-                                          } ${(!testHint?.interaction_id || isSubmittingTestHintFeedback || testHintFeedback !== null)
-                                            ? 'opacity-60 cursor-not-allowed'
-                                            : ''
-                                          } ${testHintFeedback === 'up' ? 'ring-2 ring-green-200' : ''}`}
-                                        title="Gợi ý hữu ích"
-                                      >
-                                        <ThumbsUp size={12} />
-                                        Hữu ích
-                                      </button>
-                                      <button
-                                        onClick={() => handleHintFeedback(false)}
-                                        disabled={!testHint?.interaction_id || isSubmittingTestHintFeedback || testHintFeedback !== null}
-                                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${theme === 'dark'
-                                          ? 'bg-red-700 hover:bg-red-600 text-red-100'
-                                          : 'bg-red-600 hover:bg-red-500 text-white'
-                                          } ${(!testHint?.interaction_id || isSubmittingTestHintFeedback || testHintFeedback !== null)
-                                            ? 'opacity-60 cursor-not-allowed'
-                                            : ''
-                                          } ${testHintFeedback === 'down' ? 'ring-2 ring-red-200' : ''}`}
-                                        title="Gợi ý không hữu ích"
-                                      >
-                                        <ThumbsDown size={12} />
-                                        Không hữu ích
-                                      </button>
-                                      <button
-                                        onClick={handleAskMore}
-                                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${theme === 'dark'
-                                          ? 'bg-blue-700 hover:bg-blue-600 text-blue-100'
-                                          : 'bg-blue-600 hover:bg-blue-500 text-white'
-                                          }`}
-                                        title="Hỏi thêm với AI Tutor"
-                                      >
-                                        <MessageSquare size={12} />
-                                        Hỏi thêm
-                                      </button>
-                                    </div>
-                                  </div>
+                                {currentProblem?.completed && (
+                                  <span className="text-xs px-2 py-0.5 rounded bg-blue-600/20 text-blue-400 border border-blue-600/30 flex items-center gap-1">
+                                    <CheckCircle size={10} /> Solved
+                                  </span>
                                 )}
-                                {testResults.length === 0 && !testError && !isTesting && (
-                                  <div className={`p-3 rounded ${theme === 'dark' ? 'bg-zinc-900/40 text-zinc-400' : 'bg-gray-50 text-gray-600'}`}>
-                                  Chưa có kết quả test. Nhấn “Run Tests” để bắt đầu.
-                                  </div>
-                                )}
-                                {testResults.map((result, index) => (
-                                  <div key={index} className={`mb-3 p-2 rounded ${theme === 'dark' ? 'bg-zinc-800' : 'bg-gray-50'}`}>
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className={`w-3 h-3 rounded-full ${result.passed ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                                      <span className={`text-sm font-medium ${theme === 'dark' ? 'text-zinc-200' : 'text-gray-800'}`}>Test Case {result.testcase_id}</span>
-                                      <span className={`text-xs px-2 py-0.5 rounded ${result.passed ? 'bg-green-700 text-green-200' : 'bg-red-700 text-red-200'}`}>
-                                        {result.passed ? 'PASSED' : 'FAILED'}
-                                      </span>
-                                    </div>
-                                    <div className={`text-xs ${theme === 'dark' ? 'text-zinc-400' : 'text-gray-600'}`}>
-                                      <div>Expected: {result.expected_output}</div>
-                                      <div>Output: {result.output}</div>
-                                      {result.error && <div className="text-red-400">Error: {result.error}</div>}
-                                    </div>
-                                  </div>
-                                ))}
                               </div>
                             </div>
-                          </div>
-                        ) : bottomTab === 'terminal' ? (
-                          <div className="h-full w-full p-3">
-                            <div className={`h-full rounded-lg border overflow-hidden ${theme === 'dark' ? 'border-zinc-700' : 'border-gray-300'}`}>
-                              <Terminal
-                                result={null}
-                                isRunning={isRunning}
-                                code={code}
-                                runTrigger={runTrigger}
-                                wsUrl={getWebSocketUrl('/ws/terminal')}
-                                onExecutionStart={handleExecutionStart}
-                                onExecutionEnd={handleExecutionEnd}
-                              />
+
+                            <div className={`prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : 'prose-gray'}`}>
+                              <div className={`p-3 rounded-lg border text-sm whitespace-pre-wrap ${theme === 'dark' ? 'bg-zinc-900/50 border-zinc-800 text-zinc-300' : 'bg-gray-50 border-gray-200 text-gray-800'}`}>
+                                {currentProblem.description}
+                              </div>
+                            </div>
+
+                            <div className={`text-xs p-3 rounded-lg border ${theme === 'dark' ? 'bg-indigo-900/10 border-indigo-500/20 text-indigo-300' : 'bg-indigo-50 border-indigo-200 text-indigo-700'}`}>
+                              <div className="flex items-center gap-2 mb-1 font-semibold">
+                                <Lightbulb size={14} />
+                                <span>Mẹo</span>
+                              </div>
+                              Sử dụng "Gợi ý AI" ở thanh công cụ phía trên nếu bạn gặp khó khăn.
                             </div>
                           </div>
                         ) : (
-                          <div className="h-full w-full p-3">
-                            <div className={`h-full rounded-lg border overflow-hidden flex flex-col ${theme === 'dark' ? 'border-zinc-700 bg-[#1e1e1e]' : 'border-gray-300 bg-white'}`}>
-                              <div className="flex-1 overflow-auto p-3">
-                                {isTesting && (
-                                  <div className={`mb-3 p-2 rounded ${theme === 'dark' ? 'bg-zinc-800 text-zinc-200' : 'bg-gray-50 text-gray-800'}`}>
-                                    <div className="text-sm font-medium">Đang chạy test...</div>
-                                  </div>
-                                )}
-                                {testError && (
-                                  <div className={`mb-3 p-2 rounded ${theme === 'dark' ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800'}`}>
-                                  <div className="text-sm font-medium">Error running tests</div>
-                                    <div className="text-xs">{testError}</div>
-                                  </div>
-                                )}
-                                {testHint && (
-                                  <div className={`mb-3 p-3 rounded border-l-4 ${theme === 'dark' ? 'bg-yellow-900/20 border-yellow-600 text-yellow-200' : 'bg-yellow-50 border-yellow-400 text-yellow-800'}`}>
-                                    <div className="text-sm font-medium mb-1 flex items-center gap-2">
-                                      <Lightbulb size={16} />
-                                      Gợi ý AI tự động (Level {currentHintLevel})
-                                    </div>
-                                    <div className="text-sm mb-2">
-                                      <MarkdownRenderer content={testHint.hint} theme={theme} />
-                                    </div>
-                                    {testHint.error_type && testHint.error_type !== 'none' && (
-                                      <div className="text-xs opacity-75">
-                                        Lỗi: {testHint.error_message}
-                                      </div>
-                                    )}
-                                    {testHint.concepts_to_review && testHint.concepts_to_review.length > 0 && (
-                                      <div className="text-xs opacity-75 mt-1">
-                                        Khái niệm cần ôn: {testHint.concepts_to_review.join(', ')}
-                                      </div>
-                                    )}
-                                    <div className="flex items-center gap-2 mt-3">
-                                      {currentHintLevel < 5 && (
-                                        <button
-                                          onClick={handleNextHint}
-                                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${theme === 'dark'
-                                            ? 'bg-yellow-700 hover:bg-yellow-600 text-yellow-100'
-                                            : 'bg-yellow-600 hover:bg-yellow-500 text-white'
-                                            }`}
-                                          title="Yêu cầu gợi ý chi tiết hơn"
-                                        >
-                                          <NextIcon size={12} />
-                                          Gợi ý tiếp theo
-                                        </button>
-                                      )}
-                                      <button
-                                        onClick={() => handleHintFeedback(true)}
-                                        disabled={!testHint?.interaction_id || isSubmittingTestHintFeedback || testHintFeedback !== null}
-                                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${theme === 'dark'
-                                          ? 'bg-green-700 hover:bg-green-600 text-green-100'
-                                          : 'bg-green-600 hover:bg-green-500 text-white'
-                                          } ${(!testHint?.interaction_id || isSubmittingTestHintFeedback || testHintFeedback !== null)
-                                            ? 'opacity-60 cursor-not-allowed'
-                                            : ''
-                                          } ${testHintFeedback === 'up' ? 'ring-2 ring-green-200' : ''}`}
-                                        title="Gợi ý hữu ích"
-                                      >
-                                        <ThumbsUp size={12} />
-                                        Hữu ích
-                                      </button>
-                                      <button
-                                        onClick={() => handleHintFeedback(false)}
-                                        disabled={!testHint?.interaction_id || isSubmittingTestHintFeedback || testHintFeedback !== null}
-                                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${theme === 'dark'
-                                          ? 'bg-red-700 hover:bg-red-600 text-red-100'
-                                          : 'bg-red-600 hover:bg-red-500 text-white'
-                                          } ${(!testHint?.interaction_id || isSubmittingTestHintFeedback || testHintFeedback !== null)
-                                            ? 'opacity-60 cursor-not-allowed'
-                                            : ''
-                                          } ${testHintFeedback === 'down' ? 'ring-2 ring-red-200' : ''}`}
-                                        title="Gợi ý không hữu ích"
-                                      >
-                                        <ThumbsDown size={12} />
-                                        Không hữu ích
-                                      </button>
-                                      <button
-                                        onClick={handleAskMore}
-                                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${theme === 'dark'
-                                          ? 'bg-blue-700 hover:bg-blue-600 text-blue-100'
-                                          : 'bg-blue-600 hover:bg-blue-500 text-white'
-                                          }`}
-                                        title="Hỏi thêm với AI Tutor"
-                                      >
-                                        <MessageSquare size={12} />
-                                        Hỏi thêm
-                                      </button>
-                                    </div>
-                                  </div>
-                                )}
-                                {testResults.length === 0 && !testError && !isTesting && (
-                                  <div className={`p-3 rounded ${theme === 'dark' ? 'bg-zinc-900/40 text-zinc-400' : 'bg-gray-50 text-gray-600'}`}>
-                                  Chưa có kết quả test. Nhấn “Run Tests” để bắt đầu.
-                                  </div>
-                                )}
-                                {testResults.map((result, index) => (
-                                  <div key={index} className={`mb-3 p-2 rounded ${theme === 'dark' ? 'bg-zinc-800' : 'bg-gray-50'}`}>
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className={`w-3 h-3 rounded-full ${result.passed ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                                      <span className={`text-sm font-medium ${theme === 'dark' ? 'text-zinc-200' : 'text-gray-800'}`}>Test Case {result.testcase_id}</span>
-                                      <span className={`text-xs px-2 py-0.5 rounded ${result.passed ? 'bg-green-700 text-green-200' : 'bg-red-700 text-red-200'}`}>
-                                        {result.passed ? 'PASSED' : 'FAILED'}
-                                      </span>
-                                    </div>
-                                    <div className={`text-xs ${theme === 'dark' ? 'text-zinc-400' : 'text-gray-600'}`}>
-                                      <div>Expected: {result.expected_output}</div>
-                                      <div>Output: {result.output}</div>
-                                      {result.error && <div className="text-red-400">Error: {result.error}</div>}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
+                          <div className="flex flex-col items-center justify-center h-64 text-center p-6 opacity-60">
+                            <FileText size={48} className="mb-4 text-gray-400" />
+                            <p className={`text-sm ${theme === 'dark' ? 'text-zinc-400' : 'text-gray-600'}`}>
+                              Chưa chọn bài tập nào.<br />
+                              Vui lòng chọn từ tab <b>Danh sách</b>.
+                            </p>
                           </div>
                         )}
                       </div>
-                    </div>
+                    )}
                   </div>
-                )}
+                </div>
+              )}    {/* CENTER: Editor & Terminal */}
+              <div className="flex-1 flex flex-col min-w-0 bg-transparent">
+                {/* Editor Area */}
+                <div className={`flex-1 min-h-0 relative ${theme === 'dark' ? 'bg-[#1e1e1e]' : 'bg-white'}`}>
+                  <SimpleEditor code={code} onChange={setCode} theme={theme} />
+                </div>
 
-                {/* Panel gợi ý */}
-                {isHintPanelOpen && (
-                  <div className="absolute top-0 right-0 h-full z-10">
-                    <HintPanel
-                      code={code}
-                      problemId={currentProblem?.id?.toString()}
-                      sessionId={activeSessionId}
-                      theme={theme}
-                      language={language}
-                      isOpen={isHintPanelOpen}
-                      onClose={() => setIsHintPanelOpen(false)}
-                      onApplySuggestion={handleApplySuggestion}
-                    />
+                {/* Terminal / Tests Area */}
+                {showTerminal && (
+                  <div
+                    className={`flex-shrink-0 border-t flex flex-col transition-all duration-300 ease-in-out ${theme === 'dark' ? 'border-zinc-800 bg-[#1e1e1e]' : 'border-gray-200 bg-white'}`}
+                    style={{ height: terminalExpanded ? '60%' : '35%' }}
+                  >
+                    <div className={`px-4 py-2 border-b flex items-center justify-betweenSelect ${theme === 'dark' ? 'border-zinc-800 bg-zinc-900' : 'border-gray-200 bg-gray-50'}`}>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setBottomTab('terminal')}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-t-md border-b-2 transition-colors ${bottomTab === 'terminal'
+                            ? theme === 'dark' ? 'border-indigo-500 text-indigo-400 bg-zinc-800' : 'border-indigo-600 text-indigo-700 bg-white'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                          Terminal
+                        </button>
+                        <button
+                          onClick={() => setBottomTab('tests')}
+                          disabled={!(testResults.length > 0 || testError || isTesting)}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-t-md border-b-2 transition-colors flex items-center gap-2 ${(testResults.length > 0 || testError || isTesting)
+                            ? bottomTab === 'tests'
+                              ? theme === 'dark' ? 'border-emerald-500 text-emerald-400 bg-zinc-800' : 'border-emerald-600 text-emerald-700 bg-white'
+                              : 'border-transparent text-gray-500 hover:text-gray-700'
+                            : 'border-transparent opacity-50 cursor-not-allowed'
+                            }`}
+                        >
+                          Test Results
+                          {(testResults.length > 0 || testError) && (
+                            <span className={`px-1.5 py-0.5 text-[10px] rounded-full ${testError ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'}`}>
+                              {testError ? '!' : `${testResults.filter((t: any) => t.passed === true).length}/${testResults.length}`}
+                            </span>
+                          )}
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setTerminalExpanded(!terminalExpanded)}
+                          className={`p-1.5 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors`}
+                          title={terminalExpanded ? "Thu nhỏ" : "Phóng to"}
+                        >
+                          {terminalExpanded ? <Minimize2 size={14} className={theme === 'dark' ? 'text-zinc-400' : 'text-gray-500'} /> : <Maximize2 size={14} className={theme === 'dark' ? 'text-zinc-400' : 'text-gray-500'} />}
+                        </button>
+                        <button
+                          onClick={() => setShowTerminal(false)}
+                          className={`p-1.5 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors`}
+                          title="Đóng panel"
+                        >
+                          <ChevronDown size={14} className={theme === 'dark' ? 'text-zinc-400' : 'text-gray-500'} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 overflow-hidden relative">
+                      {bottomTab === 'terminal' ? (
+                        <div className="h-full w-full p-2">
+                          <Terminal
+                            result={null}
+                            isRunning={isRunning}
+                            code={code}
+                            runTrigger={runTrigger}
+                            wsUrl={getWebSocketUrl('/ws/terminal')}
+                            onExecutionStart={handleExecutionStart}
+                            onExecutionEnd={handleExecutionEnd}
+                          />
+                        </div>
+                      ) : (
+                        <div className="h-full w-full overflow-y-auto p-4 custom-scrollbar">
+                          {isTesting && (
+                            <div className="flex items-center gap-2 text-sm text-zinc-500 mb-4 animate-pulse">
+                              <TestTube size={16} /> Đang chạy test cases...
+                            </div>
+                          )}
+                          {testError && (
+                            <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-900/50 text-sm mb-4">
+                              <b>Lỗi:</b> {testError}
+                            </div>
+                          )}
+
+                          {/* Hints Result Block */}
+                          {testHint && (
+                            <div className={`mb-6 p-4 rounded-xl border ${theme === 'dark' ? 'bg-yellow-900/10 border-yellow-700/30' : 'bg-yellow-50 border-yellow-200'}`}>
+                              <div className="flex items-start gap-3">
+                                <div className={`p-2 rounded-lg ${theme === 'dark' ? 'bg-yellow-900/30 text-yellow-500' : 'bg-yellow-100 text-yellow-700'}`}>
+                                  <Lightbulb size={20} />
+                                </div>
+                                <div className="flex-1">
+                                  <h4 className={`text-sm font-bold mb-1 ${theme === 'dark' ? 'text-yellow-100' : 'text-yellow-900'}`}>
+                                    Gợi ý AI (Level {currentHintLevel})
+                                  </h4>
+                                  <div className={`text-sm leading-relaxed mb-3 ${theme === 'dark' ? 'text-yellow-100/80' : 'text-yellow-800'}`}>
+                                    <MarkdownRenderer content={testHint.hint} theme={theme} />
+                                  </div>
+
+                                  <div className="flex items-center flex-wrap gap-2 mt-2">
+                                    {/* Feedback buttons */}
+                                    <button
+                                      onClick={() => handleHintFeedback(true)}
+                                      disabled={!testHint?.interaction_id || isSubmittingTestHintFeedback || testHintFeedback !== null}
+                                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors border ${testHintFeedback === 'up'
+                                        ? 'bg-green-600 text-white border-green-600'
+                                        : theme === 'dark' ? 'border-green-800 text-green-400 hover:bg-green-900/50' : 'border-green-200 text-green-700 hover:bg-green-50'
+                                        } ${(!testHint?.interaction_id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                      <ThumbsUp size={12} /> Hữu ích
+                                    </button>
+                                    <button
+                                      onClick={() => handleHintFeedback(false)}
+                                      disabled={!testHint?.interaction_id || isSubmittingTestHintFeedback || testHintFeedback !== null}
+                                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors border ${testHintFeedback === 'down'
+                                        ? 'bg-red-600 text-white border-red-600'
+                                        : theme === 'dark' ? 'border-red-800 text-red-400 hover:bg-red-900/50' : 'border-red-200 text-red-700 hover:bg-red-50'
+                                        } ${(!testHint?.interaction_id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                      <ThumbsDown size={12} /> Không hữu ích
+                                    </button>
+                                    {currentHintLevel < 5 && (
+                                      <button onClick={handleNextHint} className="text-xs px-2 py-1 rounded border border-yellow-600/30 text-yellow-600 hover:bg-yellow-600/10 transition-colors ml-auto">
+                                        Xem gợi ý tiếp theo →
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Test Cases List */}
+                          <div className="space-y-2">
+                            {testResults.map((result, idx) => (
+                              <div key={idx} className={`p-3 rounded-lg border ${theme === 'dark' ? 'bg-zinc-800/50 border-zinc-700/50' : 'bg-white border-gray-200'} flex items-start gap-3`}>
+                                <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${result.passed ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
+                                  {result.passed ? <CheckCircle size={14} /> : <X size={14} />}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className={`text-sm font-medium ${theme === 'dark' ? 'text-zinc-300' : 'text-gray-700'}`}>Test Case #{result.testcase_id}</span>
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-bold tracking-wider ${result.passed ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                                      {result.passed ? 'Passed' : 'Failed'}
+                                    </span>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4 text-xs font-mono mt-2">
+                                    <div>
+                                      <div className="text-zinc-500 mb-0.5">Expected Output:</div>
+                                      <div className={`p-1.5 rounded ${theme === 'dark' ? 'bg-black/30 text-zinc-300' : 'bg-gray-100 text-gray-700'}`}>{result.expected_output}</div>
+                                    </div>
+                                    <div>
+                                      <div className="text-zinc-500 mb-0.5">Actual Output:</div>
+                                      <div className={`p-1.5 rounded ${theme === 'dark' ? 'bg-black/30 text-zinc-300' : 'bg-gray-100 text-gray-700'}`}>{result.output}</div>
+                                    </div>
+                                  </div>
+                                  {result.error && (
+                                    <div className="mt-2 text-xs text-red-400 p-2 rounded bg-red-900/10 border border-red-900/20 font-mono">
+                                      {result.error}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                            {testResults.length === 0 && !isTesting && !testError && (
+                              <div className="text-center py-10 opacity-50">
+                                <TestTube size={32} className="mx-auto mb-2" />
+                                <span className="text-sm">Chưa có kết quả kiểm thử</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
 
+              {/* RIGHT SIDEBAR: Hint Panel (Collapsible Overlay or Fixed) */}
+              {isHintPanelOpen && (
+                <div className={`w-96 flex-shrink-0 border-l transition-all z-20 ${theme === 'dark' ? 'bg-[#1e1e1e] border-zinc-800' : 'bg-white border-gray-200'}`}>
+                  <HintPanel
+                    code={code}
+                    problemId={currentProblem?.id?.toString()}
+                    sessionId={activeSessionId}
+                    theme={theme}
+                    language={language}
+                    isOpen={isHintPanelOpen}
+                    onClose={() => setIsHintPanelOpen(false)}
+                    onApplySuggestion={handleApplySuggestion}
+                  />
+                </div>
+              )}
+
+              {/* Tutor Chat Button & Window */}
               {!isChatOpen && (
                 <button
                   onClick={() => setIsChatOpen(true)}
@@ -1348,47 +1162,6 @@ const App: React.FC = () => {
                 </button>
               )}
 
-
-              {showProblemListPanel && (
-                <div className="absolute top-0 left-0 h-full z-10">
-                  <div className={`w-[420px] h-full border-r flex flex-col ${theme === 'dark' ? 'bg-[#1e1e1e] border-zinc-700' : 'bg-white border-gray-300'}`}>
-                    <div className={`p-3 border-b flex items-center justify-between ${theme === 'dark' ? 'border-zinc-800 bg-zinc-900' : 'border-gray-300 bg-gray-50'}`}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center">
-                          <FileText size={16} className="text-white" />
-                        </div>
-                        <div>
-                          <h3 className={`font-medium text-sm ${theme === 'dark' ? 'text-zinc-200' : 'text-gray-800'}`}>
-                            Danh sách bài tập
-                          </h3>
-                          <p className={`text-xs ${theme === 'dark' ? 'text-zinc-500' : 'text-gray-500'}`}>
-                            Chọn bài tập để làm
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => navigate(currentProblem ? `/problem/${currentProblem.id}` : '/editor')}
-                        className={`p-1 rounded transition-colors ${theme === 'dark' ? 'hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200' : 'hover:bg-gray-200 text-gray-400 hover:text-gray-800'}`}
-                      >
-                        <X size={18} />
-                      </button>
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                      <ProblemList
-                        theme={theme}
-                        selectedProblemId={currentProblem?.id}
-                        refreshTrigger={problemsRefreshTrigger}
-                        showHeader={false}
-                        embedded={true}
-                        onSelect={(p: ProblemSummary) => {
-                          resetForNewProblem(p)
-                          navigate(`/problems/${p.id}`);
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
               {isChatOpen && (
                 <div className={`fixed bottom-6 right-6 w-96 h-[500px] rounded-lg border shadow-2xl flex flex-col z-40 ${theme === 'dark' ? 'bg-[#1e1e1e] border-zinc-700' : 'bg-white border-gray-300'}`}>
                   <div className={`px-4 py-3 rounded-t-lg border-b flex items-center justify-between ${theme === 'dark' ? 'bg-zinc-800 border-zinc-700' : 'bg-gray-100 border-gray-300'}`}>
@@ -1418,33 +1191,39 @@ const App: React.FC = () => {
             </div>
           )}
 
-          {activeTab === TabView.PATH && (
-            <div className={`h-full w-full ${theme === 'dark' ? 'bg-[#09090b]' : 'bg-gray-50'}`}>
-              <LearningMap nodes={learningNodes} theme={theme} />
-            </div>
-          )}
+          {
+            activeTab === TabView.PATH && (
+              <div className={`h-full w-full ${theme === 'dark' ? 'bg-[#09090b]' : 'bg-gray-50'}`}>
+                <LearningMap nodes={learningNodes} theme={theme} />
+              </div>
+            )
+          }
 
-          {activeTab === TabView.DASHBOARD && (
-            <div className={`h-full w-full ${theme === 'dark' ? 'bg-[#09090b]' : 'bg-gray-50'}`}>
-              <KnowledgeDashboard masteryData={masteryData} report={learningReport} theme={theme} />
-            </div>
-          )}
+          {
+            activeTab === TabView.DASHBOARD && (
+              <div className={`h-full w-full ${theme === 'dark' ? 'bg-[#09090b]' : 'bg-gray-50'}`}>
+                <KnowledgeDashboard masteryData={masteryData} report={learningReport} theme={theme} />
+              </div>
+            )
+          }
 
-          {activeTab === TabView.AUTH && (
-            <div className={`h-full w-full flex items-center justify-center ${theme === 'dark' ? 'bg-[#09090b]' : 'bg-gray-50'}`}>
-              <Auth
-                theme={theme}
-                onLogin={async () => {
-                  setIsLoggedIn(true);
-                  navigate('/editor', { replace: true });
-                  setProblemsRefreshTrigger(prev => prev + 1);
-                }}
-              />
-            </div>
-          )}
+          {
+            activeTab === TabView.AUTH && (
+              <div className={`h-full w-full flex items-center justify-center ${theme === 'dark' ? 'bg-[#09090b]' : 'bg-gray-50'}`}>
+                <Auth
+                  theme={theme}
+                  onLogin={async () => {
+                    setIsLoggedIn(true);
+                    navigate('/editor', { replace: true });
+                    setProblemsRefreshTrigger(prev => prev + 1);
+                  }}
+                />
+              </div>
+            )
+          }
 
-        </main>
-      </div>
+        </main >
+      </div >
 
       {pathname === '/settings' && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
@@ -1469,32 +1248,38 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {pathname === '/submissions' && (
-        <MySubmissions
-          theme={theme}
-          onClose={() => navigate(lastNonMySubmissionsPath || '/editor')}
-        />
-      )}
+      {
+        pathname === '/submissions' && (
+          <MySubmissions
+            theme={theme}
+            onClose={() => navigate(lastNonMySubmissionsPath || '/editor')}
+          />
+        )
+      }
 
-      {showVisualization && (
-        <CodeVisualization
-          code={code}
-          visualizationType={visualizationType}
-          onTypeChange={setVisualizationType}
-          isOpen={showVisualization}
-          onClose={() => setShowVisualization(false)}
-          theme={theme}
-        />
-      )}
+      {
+        showVisualization && (
+          <CodeVisualization
+            code={code}
+            visualizationType={visualizationType}
+            onTypeChange={setVisualizationType}
+            isOpen={showVisualization}
+            onClose={() => setShowVisualization(false)}
+            theme={theme}
+          />
+        )
+      }
 
-      {pathname === '/progress' && (
-        <ProgressTracker
-          isOpen={true}
-          onClose={() => navigate(lastNonProgressPath || '/editor')}
-          theme={theme}
-        />
-      )}
-    </div>
+      {
+        pathname === '/progress' && (
+          <ProgressTracker
+            isOpen={true}
+            onClose={() => navigate(lastNonProgressPath || '/editor')}
+            theme={theme}
+          />
+        )
+      }
+    </div >
   );
 };
 

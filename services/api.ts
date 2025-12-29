@@ -52,6 +52,20 @@ export const getProblems = async (opts: ProblemQueryOptions = {}) => {
   return resp.json();
 };
 
+//Lấy danh sách loại bài tập từ database
+//Dùng để populate bộ lọc problem_type
+export interface ProblemType {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export const getProblemTypes = async (): Promise<ProblemType[]> => {
+  const resp = await fetch(`${API_BASE_URL}/problems/types`);
+  if (!resp.ok) throw new Error('Failed to fetch problem types');
+  return resp.json();
+};
+
 export const submitProblem = async (problemId: number, code: string, token?: string, hintLevel?: number) => {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
