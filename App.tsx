@@ -386,7 +386,7 @@ const App: React.FC = () => {
     setTestError(null);
     try {
       const token = localStorage.getItem('token');
-      const result = await submitProblem(currentProblem.id, code, token || undefined, currentHintLevel);
+      const result = await submitProblem(currentProblem.id, code, token || undefined, currentHintLevel, activeSessionId);
       // Chuyển sang tab tests khi có kết quả
       setBottomTab('tests');
       setTestResults(result.results || []);

@@ -66,12 +66,19 @@ export const getProblemTypes = async (): Promise<ProblemType[]> => {
   return resp.json();
 };
 
-export const submitProblem = async (problemId: number, code: string, token?: string, hintLevel?: number) => {
+export const submitProblem = async (
+  problemId: number,
+  code: string,
+  token?: string,
+  hintLevel?: number,
+  sessionId?: number | null
+) => {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const body: any = { code };
   if (hintLevel !== undefined) body.hint_level = hintLevel;
+  if (sessionId) body.session_id = sessionId;
 
   const resp = await fetch(`${API_BASE_URL}/problems/${problemId}/submit`, {
     method: 'POST',
