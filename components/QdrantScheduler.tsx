@@ -196,7 +196,7 @@ const QdrantScheduler: React.FC<QdrantSchedulerProps> = ({ theme, token, onBack 
         method: 'POST',
         headers,
         body: JSON.stringify({
-          is_passed_only: true,
+          is_passed_only: false,
           limit: 100
         })
       });
