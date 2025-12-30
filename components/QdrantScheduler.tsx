@@ -313,7 +313,15 @@ const QdrantScheduler: React.FC<QdrantSchedulerProps> = ({ theme, token, onBack 
               </button>
 
               <button
-                onClick={() => setShowImportModal(true)}
+                onClick={() => {
+                  // Reset state trước khi mở modal
+                  setImportFile(null);
+                  setImportProgress(null);
+                  setSelectedProblem(null);
+                  if (importPolling) clearInterval(importPolling);
+                  setImportPolling(null);
+                  setShowImportModal(true);
+                }}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl text-sm font-medium hover:shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 active:scale-95"
               >
                 <Database size={16} />
