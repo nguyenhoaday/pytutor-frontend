@@ -76,6 +76,15 @@ const QdrantScheduler: React.FC<QdrantSchedulerProps> = ({ theme, token, onBack 
     // return () => clearInterval(interval);
   }, []);
 
+  // Cleanup polling khi component unmount
+  useEffect(() => {
+    return () => {
+      if (importPolling) {
+        clearInterval(importPolling);
+      }
+    };
+  }, [importPolling]);
+
   useEffect(() => {
     // Load danh sách bài (tuỳ chọn) để gắn problem_id khi import
     (async () => {
@@ -757,7 +766,7 @@ const QdrantScheduler: React.FC<QdrantSchedulerProps> = ({ theme, token, onBack 
                               const progressData = await progressRes.json();
                               setImportProgress(progressData);
                               if (progressData.status === 'completed' || progressData.status === 'failed') {
-                                if (importPolling) clearInterval(importPolling);
+                                clearInterval(interval);
                                 setImportPolling(null);
                                 setSuccess(`Hoàn tất: ${progressData.imported} chunks.`);
                                 if (progressData.status === 'completed') {
@@ -769,8 +778,19 @@ const QdrantScheduler: React.FC<QdrantSchedulerProps> = ({ theme, token, onBack 
                                   }, 1000);
                                 }
                               }
+                            } else if (progressRes.status === 404) {
+                              // Import ID không tồn tại, dừng polling
+                              clearInterval(interval);
+                              setImportPolling(null);
+                              setImportProgress(null);
+                              console.warn('Import ID not found, stopping poll');
                             }
-                          } catch (e) { console.error(e); }
+                          } catch (e) {
+                            console.error(e);
+                            // Dừng polling nếu có lỗi nghiêm trọng
+                            clearInterval(interval);
+                            setImportPolling(null);
+                          }
                         };
                         const interval = setInterval(pollProgress, 2000);
                         setImportPolling(interval);
