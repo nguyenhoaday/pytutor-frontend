@@ -21,9 +21,10 @@ import UserManager from './components/UserManager';
 import SubmissionManager from './components/SubmissionManager';
 import MySubmissions from './components/MySubmissions';
 import QdrantScheduler from './components/QdrantScheduler';
+import ProblemTypeManager from './components/ProblemTypeManager';
 
 type Theme = 'dark' | 'light';
-type AdminView = 'dashboard' | 'users' | 'problems' | 'submissions' | 'scheduler';
+type AdminView = 'dashboard' | 'users' | 'problems' | 'problem-types' | 'submissions' | 'scheduler';
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
@@ -159,6 +160,7 @@ const App: React.FC = () => {
     if (p === '/admin' || p === '/admin/') return 'dashboard';
     if (p.startsWith('/admin/users')) return 'users';
     if (p.startsWith('/admin/problems')) return 'problems';
+    if (p.startsWith('/admin/problem-types')) return 'problem-types';
     if (p.startsWith('/admin/submissions')) return 'submissions';
     if (p.startsWith('/admin/scheduler')) return 'scheduler';
     return 'dashboard';
@@ -169,6 +171,7 @@ const App: React.FC = () => {
       case 'dashboard': return '/admin';
       case 'users': return '/admin/users';
       case 'problems': return '/admin/problems';
+      case 'problem-types': return '/admin/problem-types';
       case 'submissions': return '/admin/submissions';
       case 'scheduler': return '/admin/scheduler';
       default: return '/admin';
@@ -205,7 +208,7 @@ const App: React.FC = () => {
     if (p === '/submissions') return true;
     if (p === '/problems' || /^\/problems\/\d+$/.test(p)) return true;
     if (/^\/problem\/\d+$/.test(p)) return true;
-    if (p === '/admin' || /^\/admin\/(users|problems|submissions|scheduler)$/.test(p)) return true;
+    if (p === '/admin' || /^\/admin\/(users|problems|problem-types|submissions|scheduler)$/.test(p)) return true;
     return false;
   }, []);
 
@@ -449,7 +452,6 @@ const App: React.FC = () => {
           hint_level: nextLevel,
           previous_hints: [testHint.hint],
           language: language,
-          use_llm: true,
           session_id: activeSessionId
         })
       });
@@ -619,6 +621,8 @@ const App: React.FC = () => {
       );
     } else if (adminView === 'problems') {
       return <ProblemManager theme={theme} token={token} onBack={() => navigate('/admin')} />;
+    } else if (adminView === 'problem-types') {
+      return <ProblemTypeManager theme={theme} token={token} onBack={() => navigate('/admin')} />;
     } else if (adminView === 'users') {
       return <UserManager theme={theme} token={token} onBack={() => navigate('/admin')} />;
     } else if (adminView === 'submissions') {

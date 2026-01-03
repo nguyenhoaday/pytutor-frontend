@@ -227,8 +227,8 @@ const HintPanel: React.FC<HintPanelProps> = ({
             onClick={() => getHint(1)}
             disabled={isLoading}
             className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${isLoading
-                ? 'bg-zinc-700 cursor-not-allowed text-zinc-400'
-                : 'bg-green-600 hover:bg-green-500 text-white'
+              ? 'bg-zinc-700 cursor-not-allowed text-zinc-400'
+              : 'bg-green-600 hover:bg-green-500 text-white'
               }`}
           >
             {isLoading ? (
@@ -250,20 +250,20 @@ const HintPanel: React.FC<HintPanelProps> = ({
                 onClick={() => getHint(level)}
                 disabled={isLoading || !problemId || String(problemId) === 'default' || String(problemId) === ''}
                 className={`relative w-8 h-8 rounded-full text-xs font-medium transition-all ${hintLevel === level
-                    ? 'bg-blue-600 text-white shadow-lg scale-110'
-                    : level <= hintLevel
-                      ? theme === 'dark'
-                        ? 'bg-zinc-600 hover:bg-zinc-500 text-zinc-200'
-                        : 'bg-gray-300 hover:bg-gray-400 text-gray-700'
-                      : theme === 'dark'
-                        ? 'bg-zinc-700 hover:bg-zinc-600 text-zinc-300'
-                        : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                  ? 'bg-blue-600 text-white shadow-lg scale-110'
+                  : level <= hintLevel
+                    ? theme === 'dark'
+                      ? 'bg-zinc-600 hover:bg-zinc-500 text-zinc-200'
+                      : 'bg-gray-300 hover:bg-gray-400 text-gray-700'
+                    : theme === 'dark'
+                      ? 'bg-zinc-700 hover:bg-zinc-600 text-zinc-300'
+                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                   }`}
                 title={`Cấp ${level}: ${level === 1 ? 'Câu hỏi gợi mở' :
-                    level === 2 ? 'Gợi ý khái niệm' :
-                      level === 3 ? 'Chỉ ra vị trí lỗi' :
-                        level === 4 ? 'Ví dụ cụ thể' :
-                          'Hướng dẫn trực tiếp'
+                  level === 2 ? 'Gợi ý khái niệm' :
+                    level === 3 ? 'Chỉ ra vị trí lỗi' :
+                      level === 4 ? 'Ví dụ cụ thể' :
+                        'Hướng dẫn trực tiếp'
                   }`}
               >
                 {level}
@@ -278,8 +278,8 @@ const HintPanel: React.FC<HintPanelProps> = ({
         {/* Hiển thị lỗi */}
         {error && (
           <div className={`p-3 rounded-lg border ${theme === 'dark'
-              ? 'bg-red-900/20 border-red-800 text-red-400'
-              : 'bg-red-50 border-red-200 text-red-600'
+            ? 'bg-red-900/20 border-red-800 text-red-400'
+            : 'bg-red-50 border-red-200 text-red-600'
             }`}>
             <div className="flex items-center gap-2">
               <AlertTriangle size={16} />
@@ -291,8 +291,8 @@ const HintPanel: React.FC<HintPanelProps> = ({
         {/* Hiển thị gợi ý hiện tại */}
         {currentHint && (
           <div className={`p-4 rounded-lg border ${theme === 'dark'
-              ? 'bg-zinc-900/50 border-zinc-700'
-              : 'bg-white border-gray-300 shadow-sm'
+            ? 'bg-zinc-900/50 border-zinc-700'
+            : 'bg-white border-gray-300 shadow-sm'
             }`}>
             {/* Tiêu đề gợi ý */}
             <div className="flex items-center justify-between mb-3">
@@ -317,8 +317,8 @@ const HintPanel: React.FC<HintPanelProps> = ({
                 <button
                   onClick={copyHint}
                   className={`p-1.5 rounded transition-colors ${theme === 'dark'
-                      ? 'hover:bg-zinc-800 text-zinc-400'
-                      : 'hover:bg-gray-200 text-gray-500'
+                    ? 'hover:bg-zinc-800 text-zinc-400'
+                    : 'hover:bg-gray-200 text-gray-500'
                     }`}
                   title={t.copyTitle}
                 >
@@ -328,8 +328,8 @@ const HintPanel: React.FC<HintPanelProps> = ({
                   <button
                     onClick={applyHint}
                     className={`p-1.5 rounded transition-colors ${theme === 'dark'
-                        ? 'hover:bg-zinc-800 text-zinc-400'
-                        : 'hover:bg-gray-200 text-gray-500'
+                      ? 'hover:bg-zinc-800 text-zinc-400'
+                      : 'hover:bg-gray-200 text-gray-500'
                       }`}
                     title={t.applyTitle}
                   >
@@ -403,10 +403,10 @@ const HintPanel: React.FC<HintPanelProps> = ({
                     Độ tin cậy:
                   </span>
                   <span className={`font-medium ${currentHint.confidence > 0.8
-                      ? 'text-green-400'
-                      : currentHint.confidence > 0.6
-                        ? 'text-yellow-400'
-                        : 'text-red-400'
+                    ? 'text-green-400'
+                    : currentHint.confidence > 0.6
+                      ? 'text-yellow-400'
+                      : 'text-red-400'
                     }`}>
                     {Math.round(currentHint.confidence * 100)}%
                   </span>
@@ -425,12 +425,12 @@ const HintPanel: React.FC<HintPanelProps> = ({
                     Loại lỗi:
                   </span>
                   <span className={`font-medium ${currentHint.error_type === 'none'
-                      ? 'text-green-400'
-                      : currentHint.error_type === 'syntax'
-                        ? 'text-red-400'
-                        : currentHint.error_type === 'runtime'
-                          ? 'text-orange-400'
-                          : 'text-yellow-400'
+                    ? 'text-green-400'
+                    : currentHint.error_type === 'syntax'
+                      ? 'text-red-400'
+                      : currentHint.error_type === 'runtime'
+                        ? 'text-orange-400'
+                        : 'text-yellow-400'
                     }`}>
                     {currentHint.error_type === 'none' ? t.noError :
                       currentHint.error_type === 'syntax' ? t.syntaxError :
@@ -458,8 +458,8 @@ const HintPanel: React.FC<HintPanelProps> = ({
                     <span
                       key={idx}
                       className={`text-xs px-2 py-1 rounded ${theme === 'dark'
-                          ? 'bg-indigo-900/50 text-indigo-300'
-                          : 'bg-indigo-100 text-indigo-700'
+                        ? 'bg-indigo-900/50 text-indigo-300'
+                        : 'bg-indigo-100 text-indigo-700'
                         }`}
                     >
                       {concept}
@@ -469,15 +469,7 @@ const HintPanel: React.FC<HintPanelProps> = ({
               </div>
             )}
 
-            {/* Thông tin chiến lược */}
-            <div className={`text-xs p-2 rounded ${theme === 'dark' ? 'bg-zinc-800/30' : 'bg-gray-100'
-              }`}>
-              <span className={theme === 'dark' ? 'text-zinc-500' : 'text-gray-500'}>
-                Phương pháp: {currentHint.strategy === 'qdrant_llm' ? 'AI + Cơ sở kiến thức' :
-                  currentHint.strategy === 'rag_socratic' ? 'Socratic + RAG' :
-                    currentHint.strategy === 'template' ? 'Mẫu có sẵn' : currentHint.strategy}
-              </span>
-            </div>
+
 
             {/* Thông tin tham khảo */}
             {currentHint.reference_used && (
@@ -496,8 +488,8 @@ const HintPanel: React.FC<HintPanelProps> = ({
                   onClick={() => submitFeedback(true)}
                   disabled={!currentHint?.interaction_id || isSubmittingFeedback || feedback !== null}
                   className={`p-1.5 rounded transition-colors ${theme === 'dark'
-                      ? 'hover:bg-zinc-800 text-zinc-400 hover:text-green-400'
-                      : 'hover:bg-gray-200 text-gray-500 hover:text-green-600'
+                    ? 'hover:bg-zinc-800 text-zinc-400 hover:text-green-400'
+                    : 'hover:bg-gray-200 text-gray-500 hover:text-green-600'
                     } ${(!currentHint?.interaction_id || isSubmittingFeedback || feedback !== null)
                       ? 'opacity-60 cursor-not-allowed'
                       : ''
@@ -510,8 +502,8 @@ const HintPanel: React.FC<HintPanelProps> = ({
                   onClick={() => submitFeedback(false)}
                   disabled={!currentHint?.interaction_id || isSubmittingFeedback || feedback !== null}
                   className={`p-1.5 rounded transition-colors ${theme === 'dark'
-                      ? 'hover:bg-zinc-800 text-zinc-400 hover:text-red-400'
-                      : 'hover:bg-gray-200 text-gray-500 hover:text-red-600'
+                    ? 'hover:bg-zinc-800 text-zinc-400 hover:text-red-400'
+                    : 'hover:bg-gray-200 text-gray-500 hover:text-red-600'
                     } ${(!currentHint?.interaction_id || isSubmittingFeedback || feedback !== null)
                       ? 'opacity-60 cursor-not-allowed'
                       : ''
@@ -527,8 +519,8 @@ const HintPanel: React.FC<HintPanelProps> = ({
                   onClick={getNextHint}
                   disabled={isLoading}
                   className={`flex items-center gap-1 text-sm px-3 py-1.5 rounded transition-colors ${theme === 'dark'
-                      ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'
-                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                    ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                     }`}
                 >
                   {t.moreDetails}

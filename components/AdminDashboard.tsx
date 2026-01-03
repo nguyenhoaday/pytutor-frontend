@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileCode, Database, Activity, Calendar, TrendingUp, Shield, AlertCircle, RefreshCw, ArrowLeft, FileText } from 'lucide-react';
+import { Users, FileCode, Database, Activity, Calendar, TrendingUp, Shield, AlertCircle, RefreshCw, ArrowLeft, FileText, Tag } from 'lucide-react';
 import { API_BASE_URL } from '../services/api';
 
 interface SystemStats {
@@ -197,6 +197,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ theme, token, onNavigat
             color="green"
             theme={theme}
             onClick={() => onNavigate('problems')}
+          />
+
+          <NavCard
+            title="Loại bài tập"
+            description="Quản lý danh mục/thể loại bài tập"
+            icon={<Tag className="w-8 h-8" />}
+            color="purple"
+            theme={theme}
+            onClick={() => onNavigate('problem-types' as any)}
           />
 
           <NavCard

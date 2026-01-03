@@ -66,6 +66,59 @@ export const getProblemTypes = async (): Promise<ProblemType[]> => {
   return resp.json();
 };
 
+// Admin Problem Type Management
+export const getAdminProblemTypes = async (token: string): Promise<ProblemType[]> => {
+  const resp = await fetch(`${API_BASE_URL}/api/admin/problem-types`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!resp.ok) throw new Error('Failed to fetch problem types');
+  return resp.json();
+};
+
+export const createProblemType = async (token: string, data: { name: string; description?: string }) => {
+  const resp = await fetch(`${API_BASE_URL}/api/admin/problem-types`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!resp.ok) {
+    const error = await resp.json();
+    throw new Error(error.detail || 'Failed to create problem type');
+  }
+  return resp.json();
+};
+
+export const updateProblemType = async (token: string, id: number, data: { name?: string; description?: string }) => {
+  const resp = await fetch(`${API_BASE_URL}/api/admin/problem-types/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!resp.ok) {
+    const error = await resp.json();
+    throw new Error(error.detail || 'Failed to update problem type');
+  }
+  return resp.json();
+};
+
+export const deleteProblemType = async (token: string, id: number) => {
+  const resp = await fetch(`${API_BASE_URL}/api/admin/problem-types/${id}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!resp.ok) {
+    const error = await resp.json();
+    throw new Error(error.detail || 'Failed to delete problem type');
+  }
+  return resp.json();
+};
+
 export const submitProblem = async (
   problemId: number,
   code: string,
@@ -170,6 +223,8 @@ export const getLearningReport = async (token?: string): Promise<{
 
 // Tutor API
 
+// Tutor API
+
 export interface HintRequest {
   code: string;
   problem_id: string;
@@ -177,7 +232,6 @@ export interface HintRequest {
   hint_level?: number;
   previous_hints?: string[];
   language?: string;
-  use_llm?: boolean;
   session_id?: number;
 }
 
@@ -197,7 +251,6 @@ export interface HintResponse {
   suggested_approach: string;
   student_intent: string;
   confidence: number;
-  strategy: string;
 }
 
 export interface TutorChatMessage {
@@ -244,8 +297,7 @@ export const getHintFromTutor = async (
       problem_description: request.problem_description,
       hint_level: request.hint_level || 1,
       previous_hints: request.previous_hints || [],
-      language: request.language || 'vi',
-      use_llm: request.use_llm !== false
+      language: request.language || 'vi'
     })
   });
 

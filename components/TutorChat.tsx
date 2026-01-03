@@ -20,8 +20,8 @@ interface ExtendedChatMessage extends ChatMessage {
   hasReference?: boolean;
 }
 
-const TutorChat: React.FC<TutorChatProps> = ({ 
-  currentCode, 
+const TutorChat: React.FC<TutorChatProps> = ({
+  currentCode,
   problemId = "default",
   problemDescription = "Giải bài tập Python",
   theme = 'dark',
@@ -42,10 +42,10 @@ const TutorChat: React.FC<TutorChatProps> = ({
   };
 
   const [messages, setMessages] = useState<ExtendedChatMessage[]>([
-    { 
-      role: 'assistant', 
-      content: strings[language || 'vi'].welcomeMessage, 
-      timestamp: Date.now() 
+    {
+      role: 'assistant',
+      content: strings[language || 'vi'].welcomeMessage,
+      timestamp: Date.now()
     }
   ]);
   const [input, setInput] = useState('');
@@ -82,10 +82,10 @@ const TutorChat: React.FC<TutorChatProps> = ({
     const textToSend = messageText || input;
     if (!textToSend.trim()) return;
 
-    const newMsg: ExtendedChatMessage = { 
-      role: 'user', 
-      content: textToSend, 
-      timestamp: Date.now() 
+    const newMsg: ExtendedChatMessage = {
+      role: 'user',
+      content: textToSend,
+      timestamp: Date.now()
     };
     setMessages(prev => [...prev, newMsg]);
     setInput('');
@@ -153,8 +153,7 @@ const TutorChat: React.FC<TutorChatProps> = ({
         problem_description: problemDescription,
         hint_level: hintLevel,
         previous_hints: previousHints,
-        language: localLanguage,
-        use_llm: true
+        language: localLanguage
       }, token);
 
       const hintMsg: ExtendedChatMessage = {
@@ -260,7 +259,7 @@ const TutorChat: React.FC<TutorChatProps> = ({
         <div className={`px-3 py-2 border-b flex items-center gap-2 overflow-x-auto ${theme === 'dark' ? 'border-zinc-800 bg-zinc-900/50' : 'border-gray-200 bg-gray-50'}`}>
           <BookOpen size={14} className={theme === 'dark' ? 'text-zinc-500' : 'text-gray-500'} />
           {currentConcepts.map((concept, idx) => (
-            <span 
+            <span
               key={idx}
               className={`px-2 py-0.5 rounded-full text-xs ${theme === 'dark' ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700'}`}
             >
@@ -270,27 +269,25 @@ const TutorChat: React.FC<TutorChatProps> = ({
         </div>
       )}
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-              msg.role === 'assistant' 
-                ? msg.isHint ? 'bg-amber-600' : 'bg-indigo-600' 
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'assistant'
+                ? msg.isHint ? 'bg-amber-600' : 'bg-indigo-600'
                 : theme === 'dark' ? 'bg-zinc-600' : 'bg-gray-400'
-            }`}>
+              }`}>
               {msg.role === 'assistant' ? (
                 msg.isHint ? <Sparkles size={16} className="text-white" /> : <Bot size={16} className="text-white" />
               ) : (
                 <User size={16} className="text-white" />
               )}
             </div>
-            <div className={`max-w-[85%] p-3 rounded-lg text-sm leading-relaxed ${
-              msg.role === 'user' 
+            <div className={`max-w-[85%] p-3 rounded-lg text-sm leading-relaxed ${msg.role === 'user'
                 ? theme === 'dark' ? 'bg-zinc-800 text-zinc-100 rounded-tr-none' : 'bg-blue-100 text-gray-900 rounded-tr-none'
-                : msg.isHint 
+                : msg.isHint
                   ? theme === 'dark' ? 'bg-amber-900/30 border border-amber-700 text-amber-100 rounded-tl-none' : 'bg-amber-50 border border-amber-200 text-amber-900 rounded-tl-none'
                   : theme === 'dark' ? 'bg-zinc-900 border border-zinc-700 text-zinc-300 rounded-tl-none' : 'bg-gray-100 border border-gray-300 text-gray-800 rounded-tl-none'
-            }`}>
+              }`}>
               <MarkdownRenderer content={msg.content} theme={theme} />
               {msg.isHint && (
                 <div className="mt-2 flex gap-2">
@@ -338,11 +335,10 @@ const TutorChat: React.FC<TutorChatProps> = ({
               <button
                 key={idx}
                 onClick={() => handleSend(q)}
-                className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
-                  theme === 'dark' 
-                    ? 'border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' 
+                className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${theme === 'dark'
+                    ? 'border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
                     : 'border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-                }`}
+                  }`}
               >
                 {q}
               </button>
@@ -364,13 +360,12 @@ const TutorChat: React.FC<TutorChatProps> = ({
             }}
             placeholder={t.placeholder}
             rows={1}
-            className={`flex-1 border rounded-md px-3 py-2 text-sm resize-none overflow-hidden focus:outline-none focus:border-indigo-500 ${
-              theme === 'dark' 
-                ? 'bg-[#1e1e1e] border-zinc-700 text-zinc-200 placeholder-zinc-500' 
+            className={`flex-1 border rounded-md px-3 py-2 text-sm resize-none overflow-hidden focus:outline-none focus:border-indigo-500 ${theme === 'dark'
+                ? 'bg-[#1e1e1e] border-zinc-700 text-zinc-200 placeholder-zinc-500'
                 : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-            }`}
+              }`}
           />
-          <button 
+          <button
             onClick={() => handleSend()}
             disabled={isTyping || !textareaValue.trim()}
             className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white p-2 rounded-md transition-colors"
